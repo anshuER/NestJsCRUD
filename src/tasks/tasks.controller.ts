@@ -67,4 +67,12 @@ export class TasksController {
   ): Promise<Task> {
     return this.taskService.updateTask(id, taskStatus, user);
   }
+
+  @Get('/user/:id')
+  userTasks(
+    @Param('id', ParseIntPipe) id: number,
+    @GetUser() user: User,
+  ): Promise<void> {
+    return this.taskService.userTasks(id, user);
+  }
 }

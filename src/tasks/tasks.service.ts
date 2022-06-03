@@ -1,4 +1,4 @@
-import { Injectable} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { TaskStatus } from './task.status.enum';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
@@ -54,6 +54,10 @@ export class TasksService {
 
   async updateTask(id: number, status: TaskStatus, user: User): Promise<Task> {
     return this.taskRepository.updateTaskStatus(id, status, user);
+  }
+
+  async userTasks(id: number, user: User): Promise<void> {
+    return this.taskRepository.userTasks(id, user);
   }
   // deleteTask(id: string): void {
   //   const deletedTask = this.getTaskById(id);

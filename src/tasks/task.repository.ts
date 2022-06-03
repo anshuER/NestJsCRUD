@@ -1,6 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { User } from 'src/auth/user.entity';
-import { Repository, EntityRepository } from 'typeorm';
+import { Repository, EntityRepository, getRepository } from 'typeorm';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
 import { Task } from './task.entity';
@@ -30,7 +30,10 @@ export class TaskRepository extends Repository<Task> {
 
   async getTasks(filterData: GetTasksFilterDto, user: User): Promise<Task[]> {
     const { status, search } = filterData;
-    const query = this.createQueryBuilder('task').where('task.userId = :userId', { userId: user.id });
+    const query = this.createQueryBuilder('task').where(
+      'task.userId = :userId',
+      { userId: user.id },
+    );
 
     if (status) {
       query.andWhere('task.status = :status', { status });
@@ -48,14 +51,33 @@ export class TaskRepository extends Repository<Task> {
 
   async deleteTask(id: number, user: User): Promise<void> {
     const result = await this.delete({ id, userId: user.id });
-    if (result.affected===0) {
+    if (result.affected === 0) {
       throw new NotFoundException(`Task with id ${id} is not found`);
     }
   }
 
-  async updateTaskStatus(id: number, status: TaskStatus, user: User): Promise<Task> {
+  async updateTaskStatus(
+    id: number,
+    status: TaskStatus,
+    user: User,
+  ): Promise<Task> {
     const task = await this.getTaskById(id, user);
     task.status = status;
     return task.save();
+  }
+  async userTasks(id: number, user: User): Promise<any> {
+    const query = await this.createQueryBuilder('e')
+      .where('e.userId=:id', { id })
+      .getCount();
+    const userRepo = getRepository(User);
+    // const hg=await abc.createQueryBuilder('u').where('u.id = :id', { id }).select('u.username').getOne();
+    const userWithCountedTasks = await userRepo
+      .createQueryBuilder('u')
+      .loadRelationCountAndMap('u.countTasks', 'u.tasks')
+      .where('u.id = :id', { id })
+      .getOne();
+    console.log(userWithCountedTasks);
+    return userWithCountedTasks;
+    //return `Total Tasks By User of id:${id} = ${query}`;
   }
 }

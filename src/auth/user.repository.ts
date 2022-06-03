@@ -16,6 +16,13 @@ export class UserRepository extends Repository<User> {
     const user = new User();
     user.username = username;
     user.salt = salt;
+    // if (!password) {
+    //   throw new ConflictException('Enter Password');
+    //   console.log('error');
+    // } else if (!username) {
+    //   throw new ConflictException('Enter username');
+    // } else {
+    //}
     user.password = await this.hasPassword(password, user.salt);
     console.log(user.password, user.username);
     try {
